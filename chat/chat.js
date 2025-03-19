@@ -10,6 +10,22 @@ let waitingTimer = null;
 let waitingCount = 0;
 
 /**
+ * Configure Mermaid. We set startOnLoad = false because we will
+ * explicitly call mermaid.init() after inserting content.
+ */
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default', // or 'dark', etc.
+});
+
+/**
+ * Configure Marked so that it adds "language-..." classes to <code> blocks.
+ */
+marked.setOptions({
+  langPrefix: 'language-',
+});
+
+/**
  * Start showing an indicator (spinner + seconds) inside the send button,
  * and begin counting seconds.
  */
@@ -105,7 +121,6 @@ function appendMessage(role, text) {
     const container = document.createElement('div');
     container.classList.add('relative', 'group', 'mb-2', 'p-2', 'rounded', 'bg-green-50');
 
-    // We'll have an absolutely positioned copy button that appears on hover
     container.innerHTML = `
       <span class="font-bold text-green-600">ChatGPT:</span>
       <div class="assistant-content">${htmlContent}</div>
@@ -123,7 +138,27 @@ function appendMessage(role, text) {
       copyHTML(htmlContent);
     });
 
+    // Insert into DOM so we can manipulate it
     chatOutput.appendChild(container);
+
+    // Find any <code class="language-mermaid"> blocks and transform them into Mermaid diagrams
+    const mermaidCodeBlocks = container.querySelectorAll('code.language-mermaid');
+    mermaidCodeBlocks.forEach((block) => {
+      // Extract the mermaid source code
+      const mermaidSource = block.textContent;
+
+      // Create a div with class="mermaid" to let Mermaid process it
+      const mermaidDiv = document.createElement('div');
+      mermaidDiv.classList.add('mermaid');
+      // Set the textContent (the raw mermaid code)
+      mermaidDiv.textContent = mermaidSource;
+
+      // Replace the entire <pre><code> with this <div>
+      block.parentElement.replaceWith(mermaidDiv);
+    });
+
+    // Now that all mermaid blocks are replaced with <div class="mermaid">, run Mermaid
+    mermaid.init(undefined, container.querySelectorAll('.mermaid'));
   }
 
   // Auto-scroll to bottom

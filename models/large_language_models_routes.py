@@ -5,12 +5,11 @@
 from flask import Blueprint, request, jsonify, render_template
 from models.large_language_models_model import db, LargeLanguageModel
 
-# Create a Blueprint with a URL prefix, so all routes start with `/models`
 models_bp = Blueprint(
-    'models_bp', 
-    __name__, 
-    template_folder='.',  # folder containing large_language_models.html
-    static_folder='.',    # folder containing large_language_models.js
+    'models_bp',
+    __name__,
+    template_folder='templates',  # pointing to models/templates/
+    static_folder='static',       # pointing to models/static/
     url_prefix='/models'
 )
 
