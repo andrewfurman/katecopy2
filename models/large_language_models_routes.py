@@ -13,6 +13,11 @@ models_bp = Blueprint(
     url_prefix='/models'
 )
 
+@models_bp.route('/test')
+def test_route():
+    print("[DEBUG] In test_route for /models/test")
+    return "Test route under /models is working!"
+
 @models_bp.route('/', methods=['GET'])
 def show_models_page():
     """

@@ -17,6 +17,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the database with the Flask app
 db.init_app(app)
+app.debug = True
 
 # Initialize the new OpenAI client with your API key
 client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
