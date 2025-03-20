@@ -223,21 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
           row.innerHTML = `
             <td class="border-b px-4 py-2">${m.id}</td>
             <td class="border-b px-4 py-2">${m.name}</td>
-            <td class="border-b px-4 py-2">${m.provider_id}</td>
             <td class="border-b px-4 py-2">${m.provider.name}</td>
-            <td class="border-b px-4 py-2">${m.provider.base_url || ''}</td>
-            <td class="border-b px-4 py-2">${m.provider.api_key || ''}</td>
             <td class="border-b px-4 py-2">
-              <button 
-                class="bg-yellow-500 text-white px-2 py-1 rounded editModelBtn" 
-                data-id="${m.id}">
-                Edit
-              </button>
-              <button 
-                class="bg-red-500 text-white px-2 py-1 rounded ml-2 deleteModelBtn"
-                data-id="${m.id}">
-                Delete
-              </button>
+              <button class="bg-yellow-500 text-white px-2 py-1 rounded editModelBtn" data-id="${m.id}">Edit</button>
+              <button class="bg-red-500 text-white px-2 py-1 rounded ml-2 deleteModelBtn" data-id="${m.id}">Delete</button>
             </td>
           `;
 

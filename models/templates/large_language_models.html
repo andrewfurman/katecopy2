@@ -104,10 +104,7 @@
           <tr>
             <th class="px-4 py-2 border-b">Model ID</th>
             <th class="px-4 py-2 border-b">Model Name</th>
-            <th class="px-4 py-2 border-b">Provider ID</th>
             <th class="px-4 py-2 border-b">Provider Name</th>
-            <th class="px-4 py-2 border-b">Base URL</th>
-            <th class="px-4 py-2 border-b">API Key</th>
             <th class="px-4 py-2 border-b">Actions</th>
           </tr>
         </thead>
@@ -119,6 +116,7 @@
   </section>
 
   <!-- Load the JavaScript to enable CRUD actions -->
-  <script src="/models/large_language_models.js"></script>
+  <!-- Use url_for('models_bp.static', ...) instead of a direct /models/ path -->
+  <script src="{{ url_for('models_bp.static', filename='large_language_models.js') }}"></script>
 </body>
 </html>
