@@ -24,11 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // =====================================================
 
   // Handle the "Add Provider" form submission
+  // Handle the "Add Provider" form submission
   addProviderForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const name = providerNameInput.value.trim();
     const base_url = providerBaseUrlInput.value.trim();
     const api_key = providerApiKeyInput.value.trim();
+
+    // Debug: Log what data we are about to send
+    console.log("[DEBUG] 'Add Provider' form submitted", { name, base_url, api_key });
 
     // Send POST request to create a new provider
     fetch('/models/api/providers', {
@@ -37,18 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
       body: JSON.stringify({ name, base_url, api_key })
     })
       .then(response => {
+        // Debug: Log the fetch() response status and object
+        console.log("[DEBUG] createProvider fetch response:", response);
         if (!response.ok) {
-          throw new Error('Error creating provider');
+          throw new Error(`Error creating provider: ${response.status} ${response.statusText}`);
         }
         return response.json();
       })
       .then(data => {
-        console.log('Provider created:', data);
+        // Debug: Log the response body
+        console.log("[DEBUG] Provider creation result:", data);
         addProviderForm.reset();
         fetchProviders(); // refresh providers
       })
       .catch(err => {
-        console.error(err);
+        console.error("[DEBUG] Failed to create provider:", err);
         alert('Failed to create provider.');
       });
   });

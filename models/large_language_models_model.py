@@ -7,7 +7,7 @@ db = SQLAlchemy()
 class ModelProvider(db.Model):
     __tablename__ = 'model_providers'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
     base_url = db.Column(db.Text, nullable=True)
     api_key = db.Column(db.Text, nullable=True)
 
@@ -17,7 +17,7 @@ class ModelProvider(db.Model):
 class LargeLanguageModel(db.Model):
     __tablename__ = 'large_language_models'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
     provider_id = db.Column(db.Integer, db.ForeignKey('model_providers.id'), nullable=False)
 
     # Relationship to the provider

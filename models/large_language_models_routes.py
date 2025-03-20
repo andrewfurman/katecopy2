@@ -28,21 +28,46 @@ def show_models_page():
 # PROVIDER ROUTES
 # --------------------------------------------------------------------------
 
-@models_bp.route('/api/providers', methods=['GET'])
-def get_providers():
+# models/large_language_models_routes.py
+
+@models_bp.route('/api/providers', methods=['POST'])
+def create_provider():
     """
-    Returns JSON list of all ModelProviders in the database.
+    Create a new provider.
+    Expects JSON like: 
+    {
+      "name": "...", 
+      "base_url": "...", 
+      "api_key": "..."
+    }
     """
-    providers = ModelProvider.query.all()
-    data = []
-    for p in providers:
-        data.append({
-            'id': p.id,
-            'name': p.name,
-            'base_url': p.base_url,
-            'api_key': p.api_key
-        })
-    return jsonify(data)
+    data = request.json or {}
+    print("[DEBUG] create_provider route called with data:", data)
+
+    # If you want to check the request form instead (in case JSON is not coming in):
+    # print("[DEBUG] request.form:", request.form)
+
+    name = data.get('name')
+    base_url = data.get('base_url')
+    api_key = data.get('api_key')
+
+    # Debug checks
+    if not name:
+        print("[DEBUG] Name is missing in the payload!")
+        return jsonify({'error': 'Missing provider name'}), 400
+
+    new_provider = ModelProvider(
+        name=name,
+        base_url=base_url,
+        api_key=api_key
+    )
+
+    db.session.add(new_provider)
+    db.session.commit()
+
+    print("[DEBUG] New provider created with ID:", new_provider.id)
+
+    return jsonify({'message': 'Provider created successfully', 'provider_id': new_provider.id}), 201
 
 @models_bp.route('/api/providers', methods=['POST'])
 def create_provider():
