@@ -62,8 +62,15 @@ function stopWaitingIndicator() {
  */
 function updateSendBtnText(seconds) {
   const secsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
+  // Example spinner with Tailwind classes (blue top border, transparent on other sides)
   sendBtnText.innerHTML = `
-    <div class="inline-block w-4 h-4 border-2 border-gray-200 spin rounded-full mr-1"></div>
+    <div 
+      class="inline-block w-4 h-4 border-2 rounded-full mr-1
+             animate-spin
+             border-gray-200 
+             border-t-blue-500 
+             border-l-transparent border-r-transparent border-b-transparent">
+    </div>
     ${secsStr}
   `;
 }

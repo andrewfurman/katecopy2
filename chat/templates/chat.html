@@ -9,84 +9,55 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- Mermaid.js for rendering Mermaid diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <style>
-    /* Make body and html fill the screen, remove default margins */
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    /* A container for the entire app: full height, 20px side margins */
-    #appContainer {
-      min-height: 100%;
-      margin: 0 20px;
-      display: flex;
-      flex-direction: column;
-    }
-    /* Chat output area should flex/grow and be scrollable */
-    #chatOutput {
-      flex: 1;
-      overflow-y: auto;
-    }
-    /* Bottom input area is fixed at the bottom, full width minus 20px margins on each side */
-    #inputContainer {
-      position: fixed;
-      bottom: 0;
-      left: 20px;
-      right: 20px;
-      background-color: #f3f3f3;
-      padding: 8px;
-      display: flex;
-      align-items: center; /* vertically center elements */
-    }
-    /* Spinner for "waiting" indicator in the send button */
-    .spin {
-      border-top-color: #3498db; /* top border color for the spinner */
-      animation: spin 1s linear infinite; 
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
 </head>
-<body class="bg-gray-100">
-  <div id="appContainer">
+<body class="bg-gray-100 flex flex-col min-h-screen">
+  <!-- Main container (flex column) -->
+  <div class="flex flex-col flex-grow px-5 w-full">
 
-    <!-- Title + Model selection (not fixed) -->
+    <!-- Title + Model selection -->
     <div class="p-4">
       <h1 class="text-2xl font-bold mb-4">Chat with ChatGPT</h1>
       <div class="mb-4">
         <label for="model" class="block mb-1 font-semibold">Select Model:</label>
-        <select id="model" class="border rounded px-2 py-1 w-full">
+        <select
+          id="model"
+          class="border rounded px-2 py-1 w-full"
+        >
           <option value="gpt-4o-mini">gpt-4o-mini</option>
           <option value="gpt-4o">gpt-4o</option>
+          <!-- Add o3-mini option -->
+          <option value="o3-mini">o3-mini</option>
         </select>
       </div>
     </div>
 
-    <!-- Chat Output (expands to fill) -->
-    <div id="chatOutput" class="bg-white p-4 rounded border mb-24">
+    <!-- Chat Output (grow, scrollable) -->
+    <div
+      id="chatOutput"
+      class="flex-grow overflow-y-auto bg-white p-4 rounded border mb-24"
+    >
       <!-- Messages from chat.js will appear here -->
     </div>
   </div>
 
-  <!-- Fixed bottom input -->
-  <div id="inputContainer">
+  <!-- Fixed bottom input container -->
+  <div
+    id="inputContainer"
+    class="fixed bottom-0 left-5 right-5 bg-gray-200 p-2 flex items-center"
+  >
     <!-- User text input -->
     <input 
-      type="text" 
-      id="userInput" 
-      class="border px-2 py-2 w-full rounded-l" 
+      type="text"
+      id="userInput"
+      class="border px-2 py-2 w-full rounded-l"
       placeholder="Type your message..."
     />
 
-    <!-- Send button (fixed width, will change its contents on wait) -->
-    <button 
-      id="sendBtn" 
+    <!-- Send button -->
+    <button
+      id="sendBtn"
       class="w-24 bg-blue-500 text-white px-2 py-2 rounded-r flex justify-center items-center"
     >
-      <!-- Default (non-waiting) content is just an arrow. 
-           When waiting, chat.js will replace this with a spinner and counter. -->
       <span id="sendBtnText">&rarr;</span>
     </button>
   </div>
