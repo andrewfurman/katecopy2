@@ -1,81 +1,44 @@
 // chat.js
+// --------------------------------------------------
+// This file contains the main chat functionality:
+// - Capturing user input
+// - Sending messages to the server
+// - Appending chat responses
+// - Copy-to-clipboard for messages
+// - Handling "Enter" key to send
+// --------------------------------------------------
+
+// --------------------------------------------------
+// Grab references to DOM elements we need
+// --------------------------------------------------
+
+
 
 const chatOutput = document.getElementById('chatOutput');
-const userInput = document.getElementById('userInput');
+const userInputField = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
-const micBtn = document.getElementById('micBtn');
-const sendBtnText = document.getElementById('sendBtnText');
 const modelSelect = document.getElementById('model');
 
-let recognition;
-let finalTranscript = '';  // We'll store the "confirmed" speech here
-
-// Check for SpeechRecognition support
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event) => {
-        let interimTranscript = '';
-        // Go through each result
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcriptSegment = event.results[i][0].transcript;
-            // If this chunk of speech is "final," accumulate it into finalTranscript
-            if (event.results[i].isFinal) {
-                finalTranscript += transcriptSegment;
-            } else {
-                // Otherwise, we consider it "interim" (partial) transcript
-                interimTranscript += transcriptSegment;
-            }
-        }
-        // Replace the userInput value with final + interim
-        userInput.value = finalTranscript + interimTranscript;
-    };
-
-    recognition.onerror = (event) => {
-        console.error('Speech recognition error', event);
-    };
-
-    // Optional: If you want to reset finalTranscript after each stop
-    recognition.onend = () => {
-        console.log('Speech recognition ended.');
-        // Uncomment if you want to clear finalTranscript each time speech ends:
-        // finalTranscript = '';
-    };
-
-} else {
-    micBtn.disabled = true;
-    micBtn.title = "Speech recognition not supported";
-}
-
-micBtn.addEventListener('click', () => {
-    if (recognition) {
-        // Toggle the microphone on/off
-        if (micBtn.classList.contains('bg-red-500')) {
-            recognition.stop();
-            micBtn.classList.remove('bg-red-500');
-            micBtn.classList.add('bg-gray-500');
-        } else {
-            recognition.start();
-            micBtn.classList.remove('bg-gray-500');
-            micBtn.classList.add('bg-red-500');
-        }
-    }
-});
-
+// --------------------------------------------------
+// Send message to the server and handle response
+// --------------------------------------------------
 async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return; // Ignore empty
+    const message = userInputField.value.trim();
+    if (!message) return; // Ignore empty input
 
-    // Reset finalTranscript after "send", so the next speech starts fresh
-    finalTranscript = '';
+    // Reset the Web Speech API transcript (if the function is available)
+    if (typeof resetTranscript === 'function') {
+        resetTranscript();
+    }
 
+    // Append your own (user) message to the chat
     appendMessage('user', message);
-    userInput.value = ''; // Clear input
+
+    // Clear the user input
+    userInputField.value = '';
 
     try {
+        // Send to the Flask endpoint
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -86,26 +49,84 @@ async function sendMessage() {
             throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
 
+        // Get JSON data
         const data = await response.json();
+        // Append the assistant's reply
         appendMessage('assistant', data.response);
+
     } catch (error) {
         console.error('Error sending message:', error);
         appendMessage('assistant', 'Error communicating with the server.');
     }
 }
 
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keydown', (e) => {
+// --------------------------------------------------
+// Event listener for the "Send" button click
+// --------------------------------------------------
+sendBtn.addEventListener('click', () => {
+    sendMessage();
+});
+
+// --------------------------------------------------
+// Event listener for "Enter" key in user input
+// --------------------------------------------------
+userInputField.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
         sendMessage();
     }
 });
 
+// --------------------------------------------------
+// Append a message to the chatOutput
+// --------------------------------------------------
 function appendMessage(role, text) {
     const messageEl = document.createElement('div');
-    messageEl.classList.add('mb-2', 'p-2', 'rounded', role === 'user' ? 'bg-blue-50' : 'bg-green-50');
-    messageEl.innerHTML = `<span class="font-bold">${role === 'user' ? 'You' : 'ChatGPT'}:</span> ${text}`;
+    messageEl.classList.add('mb-2', 'p-2', 'rounded');
+
+    // Add background color based on role
+    if (role === 'user') {
+        messageEl.classList.add('bg-blue-50');
+    } else {
+        messageEl.classList.add('bg-green-50');
+    }
+
+    // Build a small "label" for the speaker
+    const senderLabel = `<span class="font-bold">${role === 'user' ? 'You' : 'ChatGPT'}:</span> `;
+
+    // Insert the label, then convert the text from Markdown -> HTML, including Mermaid
+    messageEl.innerHTML = senderLabel;
+    // Now we use our mermaid_markdown.js function
+    // to parse markdown and render mermaid diagrams:
+    const contentContainer = document.createElement('div');
+    messageEl.appendChild(contentContainer);
+
+    // Actually render the markdown into contentContainer
+    renderMermaidMarkdown(text, contentContainer);
+
+    // Add a "copy" button for user convenience
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = 'Copy';
+    copyBtn.classList.add('ml-2', 'px-2', 'py-1', 'bg-gray-300', 'rounded', 'text-sm');
+
+    // When the button is clicked, copy the raw text to the clipboard
+    copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent any parent event
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                console.log('Text copied to clipboard:', text);
+            })
+            .catch(err => {
+                console.error('Error copying text:', err);
+            });
+    });
+
+    // Attach the copy button next to the message
+    messageEl.appendChild(copyBtn);
+
+    // Add the entire message element to the chat output
     chatOutput.appendChild(messageEl);
+
+    // Keep chat scrolled to the bottom
     chatOutput.scrollTop = chatOutput.scrollHeight;
 }

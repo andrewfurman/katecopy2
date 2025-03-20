@@ -70,7 +70,13 @@
     </button>
   </div>
 
-  <!-- Load our chat.js file -->
-  <script src="/chat.js"></script>
+  <!-- Load the speech API logic first -->
+  <script src="/static/web_speech_api.js"></script>
+
+  <!-- Load the Mermaid + Markdown helpers next -->
+  <script src="/static/mermaid_markdown.js"></script>
+
+  <!-- Finally, load the main chat logic -->
+  <script src="/static/chat.js"></script>
 </body>
 </html>
