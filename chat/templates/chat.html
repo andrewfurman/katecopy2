@@ -3,10 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <title>Chat with ChatGPT</title>
-  <!-- Tailwind CSS via CDN -->
+
+  <!-- 
+    Tailwind CSS via CDN
+    --------------------------------------------------
+    For production usage, it's recommended to install Tailwind as a PostCSS 
+    plugin or use the Tailwind CLI. See:
+    https://tailwindcss.com/docs/installation
+  -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Marked.js for rendering Markdown in the browser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <!-- Mermaid.js for rendering Mermaid diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 </head>
@@ -70,13 +79,13 @@
     </button>
   </div>
 
-  <!-- Load the speech API logic first -->
-  <script src="/static/web_speech_api.js"></script>
+  <!-- Load the Web Speech API logic -->
+  <script src="{{ url_for('chat_bp.static', filename='web_speech_api.js') }}"></script>
 
-  <!-- Load the Mermaid + Markdown helpers next -->
-  <script src="/static/mermaid_markdown.js"></script>
+  <!-- Load the Mermaid + Markdown helpers -->
+  <script src="{{ url_for('chat_bp.static', filename='mermaid_markdown.js') }}"></script>
 
   <!-- Finally, load the main chat logic -->
-  <script src="/static/chat.js"></script>
+  <script src="{{ url_for('chat_bp.static', filename='chat.js') }}"></script>
 </body>
 </html>
