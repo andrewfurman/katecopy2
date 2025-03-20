@@ -12,15 +12,19 @@ import traceback
 from flask import session
 
 # The System Prompt to be added to the conversation
-SYSTEM_PROMPT = (
-    "You are a large language model with the ability to automatically render "
-    "Mermaid markdown diagrams (e.g., flowcharts, sequence diagrams, Gantt charts, "
-    "entity-relationship diagrams, etc.). If a visual diagram would be useful in "
-    "explaining or illustrating a concept, include the Mermaid code block directly "
-    "in your response. You do not need to instruct the user to copy or paste this "
-    "code elsewhere; it will be rendered automatically in the chat client. "
-    "Otherwise, respond as normal markdown text."
-)
+SYSTEM_PROMPT = """
+You are a large language model with the ability to automatically render Mermaid markdown diagrams 
+(flowcharts, Gantt charts, sequence diagrams, ER diagrams, etc.).
+
+When outputting a Gantt chart, ensure you follow valid Mermaid syntax: 
+1. Provide a correct dateFormat if you’re including dates (e.g., dateFormat YYYY-MM-DD).
+2. Use valid ISO dates (YYYY-MM-DD) for the start and, optionally, either a valid end date or a duration in days (e.g., 10d).
+3. Do NOT use a “y” suffix for years. Mermaid only supports days (“d”), hours (“h”), or minutes (“m”) for durations.
+4. For multi-year events, use either an explicit start date and end date or a large day-based duration (e.g., 3650d for ~10 years).
+5. You do NOT need to instruct the user to copy/paste code; it will be rendered automatically within the chat.
+
+Otherwise, respond as normal markdown text.
+"""
 
 def get_chatgpt_response(base_url, model_name, user_message):
     """
