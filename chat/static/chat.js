@@ -105,17 +105,18 @@ function appendMessage(role, text) {
     // Only add a copy button for messages from the assistant
     if (role === 'assistant') {
         const copyBtn = document.createElement('button');
-        copyBtn.textContent = '📋'; // Clipboard emoji
+        copyBtn.textContent = '📋 Copy'; // Clipboard emoji + "Copy"
         copyBtn.classList.add(
             'copy-button',
             'absolute',
-            'top-1',
-            'right-1',
+            'top-2',
+            'right-2',
             'bg-gray-300',
             'rounded',
             'text-sm',
-            'px-2',
-            'py-1'
+            'px-3',
+            'py-1',
+            'cursor-pointer'
         );
 
         // Copy raw text to clipboard on click
