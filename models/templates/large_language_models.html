@@ -1,69 +1,122 @@
-<!-- this HDL page will let you view all of the models. They're hosting the URL's and the API key for each of the models. -->
-
-<!-- models/large_language_models.html -->
+<!-- models/templates/large_language_models.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Manage Large Language Models</title>
+  <title>Manage Large Language Models & Providers</title>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4">
-  <h1 class="text-2xl font-bold mb-4">Manage Large Language Models</h1>
+  <h1 class="text-2xl font-bold mb-6">Manage Providers & Large Language Models</h1>
 
-  <!-- Form to Add a New Model -->
-  <form id="addForm" class="mb-6 max-w-md">
-    <div class="mb-2">
-      <label for="modelName" class="block font-semibold">Model Name</label>
-      <input 
-        type="text" 
-        id="modelName" 
-        class="border rounded px-2 py-1 w-full" 
-        required
-      >
-    </div>
-    <div class="mb-2">
-      <label for="baseUrl" class="block font-semibold">Base URL</label>
-      <input 
-        type="text" 
-        id="baseUrl" 
-        class="border rounded px-2 py-1 w-full"
-      >
-    </div>
-    <div class="mb-2">
-      <label for="apiKey" class="block font-semibold">API Key</label>
-      <input 
-        type="text" 
-        id="apiKey" 
-        class="border rounded px-2 py-1 w-full"
-      >
-    </div>
-    <button 
-      type="submit" 
-      class="bg-blue-500 text-white px-4 py-2 rounded"
-    >
-      Add Model
-    </button>
-  </form>
+  <!-- ------------------ Providers Section ------------------ -->
+  <section class="mb-10">
+    <h2 class="text-xl font-bold mb-2">Manage Providers</h2>
 
-  <!-- Table of Existing Models -->
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white" id="modelsTable">
-      <thead>
-        <tr>
-          <th class="px-4 py-2 border-b">ID</th>
-          <th class="px-4 py-2 border-b">Name</th>
-          <th class="px-4 py-2 border-b">Base URL</th>
-          <th class="px-4 py-2 border-b">API Key</th>
-          <th class="px-4 py-2 border-b">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Rows will be inserted dynamically by large_language_models.js -->
-      </tbody>
-    </table>
-  </div>
+    <!-- Form to Add a New Provider -->
+    <form id="addProviderForm" class="mb-4 max-w-md">
+      <div class="mb-2">
+        <label for="providerName" class="block font-semibold">Provider Name</label>
+        <input 
+          type="text" 
+          id="providerName" 
+          class="border rounded px-2 py-1 w-full" 
+          required
+        >
+      </div>
+      <div class="mb-2">
+        <label for="providerBaseUrl" class="block font-semibold">Base URL</label>
+        <input 
+          type="text" 
+          id="providerBaseUrl" 
+          class="border rounded px-2 py-1 w-full"
+        >
+      </div>
+      <div class="mb-2">
+        <label for="providerApiKey" class="block font-semibold">API Key</label>
+        <input 
+          type="text" 
+          id="providerApiKey" 
+          class="border rounded px-2 py-1 w-full"
+        >
+      </div>
+      <button 
+        type="submit" 
+        class="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Add Provider
+      </button>
+    </form>
+
+    <!-- Table of Existing Providers -->
+    <div class="overflow-x-auto mb-6">
+      <table class="min-w-full bg-white" id="providersTable">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 border-b">ID</th>
+            <th class="px-4 py-2 border-b">Name</th>
+            <th class="px-4 py-2 border-b">Base URL</th>
+            <th class="px-4 py-2 border-b">API Key</th>
+            <th class="px-4 py-2 border-b">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows inserted by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ------------------ Models Section ------------------ -->
+  <section>
+    <h2 class="text-xl font-bold mb-2">Manage Large Language Models</h2>
+
+    <!-- Form to Add a New Model -->
+    <form id="addModelForm" class="mb-4 max-w-md">
+      <div class="mb-2">
+        <label for="modelName" class="block font-semibold">Model Name</label>
+        <input 
+          type="text" 
+          id="modelName" 
+          class="border rounded px-2 py-1 w-full" 
+          required
+        >
+      </div>
+      <div class="mb-2">
+        <label for="modelProviderSelect" class="block font-semibold">Provider</label>
+        <select id="modelProviderSelect" class="border rounded px-2 py-1 w-full" required>
+          <!-- Options loaded by JS -->
+        </select>
+      </div>
+      <button 
+        type="submit" 
+        class="bg-green-500 text-white px-4 py-2 rounded"
+      >
+        Add Model
+      </button>
+    </form>
+
+    <!-- Table of Existing Models -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white" id="modelsTable">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 border-b">Model ID</th>
+            <th class="px-4 py-2 border-b">Model Name</th>
+            <th class="px-4 py-2 border-b">Provider ID</th>
+            <th class="px-4 py-2 border-b">Provider Name</th>
+            <th class="px-4 py-2 border-b">Base URL</th>
+            <th class="px-4 py-2 border-b">API Key</th>
+            <th class="px-4 py-2 border-b">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows inserted by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <!-- Load the JavaScript to enable CRUD actions -->
   <script src="/models/large_language_models.js"></script>
