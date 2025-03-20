@@ -18,6 +18,18 @@
 
   <!-- Mermaid.js for rendering Mermaid diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+  <!-- Custom styling for copy button hover -->
+  <style>
+    /* Hide copy button by default on assistant messages */
+    .assistant-message .copy-button {
+      display: none;
+    }
+    /* Show copy button on hover */
+    .assistant-message:hover .copy-button {
+      display: inline-block;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
   <!-- Main container (flex column) -->
