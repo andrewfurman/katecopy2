@@ -3,224 +3,109 @@
 const chatOutput = document.getElementById('chatOutput');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
+const micBtn = document.getElementById('micBtn');
 const sendBtnText = document.getElementById('sendBtnText');
 const modelSelect = document.getElementById('model');
 
-let waitingTimer = null;
-let waitingCount = 0;
+let recognition;
+let finalTranscript = '';  // We'll store the "confirmed" speech here
 
-/**
- * Configure Mermaid. We set startOnLoad = false because we will
- * explicitly call mermaid.init() after inserting content.
- */
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default', // or 'dark', etc.
-});
+// Check for SpeechRecognition support
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
 
-/**
- * Configure Marked so that it adds "language-..." classes to <code> blocks.
- */
-marked.setOptions({
-  langPrefix: 'language-',
-});
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        // Go through each result
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcriptSegment = event.results[i][0].transcript;
+            // If this chunk of speech is "final," accumulate it into finalTranscript
+            if (event.results[i].isFinal) {
+                finalTranscript += transcriptSegment;
+            } else {
+                // Otherwise, we consider it "interim" (partial) transcript
+                interimTranscript += transcriptSegment;
+            }
+        }
+        // Replace the userInput value with final + interim
+        userInput.value = finalTranscript + interimTranscript;
+    };
 
-/**
- * Start showing an indicator (spinner + seconds) inside the send button,
- * and begin counting seconds.
- */
-function startWaitingIndicator() {
-  waitingCount = 0;
-  // Disable the button so user cannot click repeatedly
-  sendBtn.disabled = true;
-  // Immediately show spinner + "00"
-  updateSendBtnText(waitingCount);
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error', event);
+    };
 
-  // Every second, increment and update the displayed time
-  waitingTimer = setInterval(() => {
-    waitingCount += 1;
-    updateSendBtnText(waitingCount);
-  }, 1000);
+    // Optional: If you want to reset finalTranscript after each stop
+    recognition.onend = () => {
+        console.log('Speech recognition ended.');
+        // Uncomment if you want to clear finalTranscript each time speech ends:
+        // finalTranscript = '';
+    };
+
+} else {
+    micBtn.disabled = true;
+    micBtn.title = "Speech recognition not supported";
 }
 
-/**
- * Stop the indicator and revert the button to its normal arrow.
- */
-function stopWaitingIndicator() {
-  sendBtn.disabled = false;
-  if (waitingTimer) {
-    clearInterval(waitingTimer);
-    waitingTimer = null;
-  }
-  // Restore the button text to just an arrow
-  sendBtnText.innerHTML = '&rarr;';
-}
-
-/**
- * Update the send button to show a spinner and a two-digit second count.
- * For example: "spinner 07"
- */
-function updateSendBtnText(seconds) {
-  const secsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
-  // Example spinner with Tailwind classes (blue top border, transparent on other sides)
-  sendBtnText.innerHTML = `
-    <div 
-      class="inline-block w-4 h-4 border-2 rounded-full mr-1
-             animate-spin
-             border-gray-200 
-             border-t-blue-500 
-             border-l-transparent border-r-transparent border-b-transparent">
-    </div>
-    ${secsStr}
-  `;
-}
-
-/**
- * Copy HTML content to clipboard (including bold, headings, etc.).
- * Uses the ClipboardItem API if available, otherwise falls back to plain text.
- */
-async function copyHTML(htmlContent) {
-  if (navigator.clipboard && window.ClipboardItem) {
-    try {
-      // Construct items for both plain text and HTML
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          'text/html': new Blob([htmlContent], { type: 'text/html' }),
-          'text/plain': new Blob([htmlContent], { type: 'text/plain' })
-        })
-      ]);
-    } catch (err) {
-      console.error('Copy failed', err);
-      alert('Failed to copy.');
+micBtn.addEventListener('click', () => {
+    if (recognition) {
+        // Toggle the microphone on/off
+        if (micBtn.classList.contains('bg-red-500')) {
+            recognition.stop();
+            micBtn.classList.remove('bg-red-500');
+            micBtn.classList.add('bg-gray-500');
+        } else {
+            recognition.start();
+            micBtn.classList.remove('bg-gray-500');
+            micBtn.classList.add('bg-red-500');
+        }
     }
-  } else {
-    // Simple fallback: copy plain text
-    navigator.clipboard.writeText(htmlContent).then(() => {
-      alert('Copied to clipboard (as plain text)!');
-    }, err => {
-      console.error('Fallback copy failed', err);
-      alert('Failed to copy.');
-    });
-  }
-}
+});
 
-/**
- * Append messages to the chat display.
- * role = 'user' | 'assistant'
- * text = raw string (for user) or Markdown string (for ChatGPT).
- */
-function appendMessage(role, text) {
-  if (role === 'user') {
-    // Plain text user message
-    const messageEl = document.createElement('div');
-    messageEl.classList.add('mb-2', 'p-2', 'rounded', 'bg-blue-50');
-    messageEl.innerHTML = `
-      <span class="font-bold text-blue-600">You:</span>
-      <span>${text}</span>
-    `;
-    chatOutput.appendChild(messageEl);
-
-  } else {
-    // Assistant message: parse with Marked for HTML
-    const htmlContent = marked.parse(text);
-
-    // Container with group-hover for copy button
-    const container = document.createElement('div');
-    container.classList.add('relative', 'group', 'mb-2', 'p-2', 'rounded', 'bg-green-50');
-
-    container.innerHTML = `
-      <span class="font-bold text-green-600">ChatGPT:</span>
-      <div class="assistant-content">${htmlContent}</div>
-      <button 
-        class="hidden group-hover:block absolute top-2 right-2 bg-gray-200 text-sm px-2 py-1 rounded copyBtn"
-        title="Copy HTML"
-      >
-        Copy
-      </button>
-    `;
-
-    // Attach copy logic to the button
-    const copyBtn = container.querySelector('.copyBtn');
-    copyBtn.addEventListener('click', () => {
-      copyHTML(htmlContent);
-    });
-
-    // Insert into DOM so we can manipulate it
-    chatOutput.appendChild(container);
-
-    // Find any <code class="language-mermaid"> blocks and transform them into Mermaid diagrams
-    const mermaidCodeBlocks = container.querySelectorAll('code.language-mermaid');
-    mermaidCodeBlocks.forEach((block) => {
-      // Extract the mermaid source code
-      const mermaidSource = block.textContent;
-
-      // Create a div with class="mermaid" to let Mermaid process it
-      const mermaidDiv = document.createElement('div');
-      mermaidDiv.classList.add('mermaid');
-      // Set the textContent (the raw mermaid code)
-      mermaidDiv.textContent = mermaidSource;
-
-      // Replace the entire <pre><code> with this <div>
-      block.parentElement.replaceWith(mermaidDiv);
-    });
-
-    // Now that all mermaid blocks are replaced with <div class="mermaid">, run Mermaid
-    mermaid.init(undefined, container.querySelectorAll('.mermaid'));
-  }
-
-  // Auto-scroll to bottom
-  chatOutput.scrollTop = chatOutput.scrollHeight;
-}
-
-/**
- * Send the message to the Flask backend (which sends it to ChatGPT).
- */
 async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;  // ignore empty
+    const message = userInput.value.trim();
+    if (!message) return; // Ignore empty
 
-  // Display user message in chat
-  appendMessage('user', message);
-  userInput.value = ''; // clear input
+    // Reset finalTranscript after "send", so the next speech starts fresh
+    finalTranscript = '';
 
-  // Start "waiting" animation inside the button
-  startWaitingIndicator();
+    appendMessage('user', message);
+    userInput.value = ''; // Clear input
 
-  const model = modelSelect.value;
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, model: modelSelect.value })
+        });
 
-  try {
-    // Make POST request to our Flask backend
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ message, model })
-    });
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
 
-    // Stop waiting indicator once we get *any* response
-    stopWaitingIndicator();
-
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        const data = await response.json();
+        appendMessage('assistant', data.response);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        appendMessage('assistant', 'Error communicating with the server.');
     }
-
-    const data = await response.json();
-    appendMessage('assistant', data.response);
-
-  } catch (error) {
-    console.error('Error sending message:', error);
-    appendMessage('assistant', 'Sorry, there was an error. Check console.');
-  }
 }
 
-// Send on button click
 sendBtn.addEventListener('click', sendMessage);
-
-// Also allow pressing Enter
 userInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();  // optional: prevents newline in input
-    sendMessage();
-  }
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+    }
 });
+
+function appendMessage(role, text) {
+    const messageEl = document.createElement('div');
+    messageEl.classList.add('mb-2', 'p-2', 'rounded', role === 'user' ? 'bg-blue-50' : 'bg-green-50');
+    messageEl.innerHTML = `<span class="font-bold">${role === 'user' ? 'You' : 'ChatGPT'}:</span> ${text}`;
+    chatOutput.appendChild(messageEl);
+    chatOutput.scrollTop = chatOutput.scrollHeight;
+}

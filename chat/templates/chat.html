@@ -25,7 +25,6 @@
         >
           <option value="gpt-4o-mini">gpt-4o-mini</option>
           <option value="gpt-4o">gpt-4o</option>
-          <!-- Add o3-mini option -->
           <option value="o3-mini">o3-mini</option>
         </select>
       </div>
@@ -45,11 +44,20 @@
     id="inputContainer"
     class="fixed bottom-0 left-5 right-5 bg-gray-200 p-2 flex items-center"
   >
+    <!-- Microphone button for voice input -->
+    <button
+      id="micBtn"
+      class="bg-gray-500 text-white px-3 py-2 rounded-l"
+      title="Click to start voice input"
+    >
+      🎤
+    </button>
+
     <!-- User text input -->
     <input 
       type="text"
       id="userInput"
-      class="border px-2 py-2 w-full rounded-l"
+      class="border px-2 py-2 w-full"
       placeholder="Type your message..."
     />
 

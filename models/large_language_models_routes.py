@@ -2,6 +2,7 @@
 
 from flask import Blueprint, request, jsonify, render_template
 from models.large_language_models_model import db, LargeLanguageModel, ModelProvider
+from sqlalchemy import text
 
 models_bp = Blueprint(
     'models_bp',
@@ -10,6 +11,26 @@ models_bp = Blueprint(
     static_folder='static',       # pointing to models/static/
     url_prefix='/models'
 )
+
+@models_bp.route('/api/db_test', methods=['GET'])
+def db_test():
+    print("[DEBUG] db_test route called. Attempting a simple SELECT 1.")
+    try:
+        # Use text("SELECT 1") to avoid the "Textual SQL expression should be explicitly declared" error
+        result = db.session.execute(text("SELECT 1")).scalar()
+        print(f"[DEBUG] db_test result: {result}")
+
+        provider_count = db.session.query(ModelProvider).count()
+        print(f"[DEBUG] db_test: provider_count = {provider_count}")
+
+        return {
+            "select_1_result": result,
+            "provider_count": provider_count
+        }, 200
+
+    except Exception as e:
+        print(f"[DEBUG] db_test error: {e}")
+        return {"error": str(e)}, 500
 
 @models_bp.route('/test')
 def test_route():
@@ -28,7 +49,21 @@ def show_models_page():
 # PROVIDER ROUTES
 # --------------------------------------------------------------------------
 
-# models/large_language_models_routes.py
+@models_bp.route('/api/providers', methods=['GET'])
+def get_providers():
+    """
+    Returns JSON list of all ModelProviders in the database.
+    """
+    providers = ModelProvider.query.all()
+    data = []
+    for p in providers:
+        data.append({
+            'id': p.id,
+            'name': p.name,
+            'base_url': p.base_url,
+            'api_key': p.api_key
+        })
+    return jsonify(data)
 
 @models_bp.route('/api/providers', methods=['POST'])
 def create_provider():
@@ -68,27 +103,6 @@ def create_provider():
     print("[DEBUG] New provider created with ID:", new_provider.id)
 
     return jsonify({'message': 'Provider created successfully', 'provider_id': new_provider.id}), 201
-
-@models_bp.route('/api/providers', methods=['POST'])
-def create_provider():
-    """
-    Create a new provider.
-    Expects JSON like: 
-    {
-      "name": "...", 
-      "base_url": "...", 
-      "api_key": "..."
-    }
-    """
-    data = request.json or {}
-    new_provider = ModelProvider(
-        name=data.get('name'),
-        base_url=data.get('base_url'),
-        api_key=data.get('api_key')
-    )
-    db.session.add(new_provider)
-    db.session.commit()
-    return jsonify({'message': 'Provider created successfully'}), 201
 
 @models_bp.route('/api/providers/<int:provider_id>', methods=['PUT'])
 def update_provider(provider_id):

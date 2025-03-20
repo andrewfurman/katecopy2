@@ -1,4 +1,5 @@
 # main.py
+
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -11,9 +12,15 @@ from chat.chatroutes import chat_bp
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'YOUR_SECRET_KEY'
 
-# Configure SQLAlchemy for your Postgres database
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+# Print out the database URL for debugging
+db_uri = os.environ.get('DATABASE_URL')
+print(f"[DEBUG] Database URI from env: {db_uri}")  # Check if this is None or unexpected
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Enable SQLAlchemy echo to see the SQL statements in logs
+app.config['SQLALCHEMY_ECHO'] = True
 
 db.init_app(app)
 app.debug = True
