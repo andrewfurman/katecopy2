@@ -1,5 +1,5 @@
 # chat/chatroutes.py
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, session
 from chat.chatgpt_api_call import get_chatgpt_response
 
 chat_bp = Blueprint(
@@ -15,6 +15,7 @@ def chat_index():
     """
     Serves the main chat page (chat.html) from chat/templates/.
     """
+    session.pop('chat_history', None)  # Remove chat_history if it exists
     return render_template('chat.html')
 
 
