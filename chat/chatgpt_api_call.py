@@ -26,6 +26,9 @@ When outputting a Gantt chart, ensure you follow valid Mermaid syntax:
 4. For multi-year events, use either an explicit start date and end date or a large day-based duration 
    (e.g., 3650d for ~10 years).
 5. You do NOT need to instruct the user to copy/paste code; it will be rendered automatically within the chat.
+6. Do not use parentheses "()" anywhere in the Gantt chart syntax. This causes a rendering error.
+7. Keep swimlane titles short and use abreviations where it is very clear what they stand for. If a swimlane title is over 25 characters, split it over multiple lines using the "<br>".
+8. Have a maximum of 
 
 Otherwise, respond as normal markdown text.
 """

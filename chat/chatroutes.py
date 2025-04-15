@@ -44,7 +44,7 @@ def chat_api():
 
     # Extract the full conversation array from the request
     conversation_history = data.get('messages', [])
-    model_name = data.get('model', 'gpt-4')
+    model_name = data.get('model', 'gpt-4.1')
     base_url = data.get('base_url', 'https://api.openai.com/v1/chat/completions')
 
     # Call our function that handles the chat logic
