@@ -1,5 +1,11 @@
 # chat/chatroutes.py
-from flask import Blueprint, render_template, request, jsonify, session
+
+"""
+Routes for rendering the chat page and handling the /api/chat requests.
+We now rely on the front-end to send the *entire* conversation each time.
+"""
+
+from flask import Blueprint, render_template, request, jsonify
 from chat.chatgpt_api_call import get_chatgpt_response
 
 chat_bp = Blueprint(
@@ -13,37 +19,38 @@ chat_bp = Blueprint(
 @chat_bp.route('/')
 def chat_index():
     """
-    Serves the main chat page (chat.html) from chat/templates/.
+    Renders the main chat page. 
+    No session logic— each tab's conversation is handled on the front-end.
     """
-    session.pop('chat_history', None)  # Remove chat_history if it exists
     return render_template('chat.html')
-
 
 @chat_bp.route('/api/chat', methods=['POST'])
 def chat_api():
     """
     Receives JSON from the front-end (chat.js), which should include:
-      {
-        "message": "...",
-        "model": "...",
-        "base_url": "..."  (optional)
-      }
+    {
+      "messages": [
+        {"role": "system"|"user"|"assistant", "content": "..."},
+        ...
+      ],
+      "model": "gpt-4" (etc),
+      "base_url": "..." (optional)
+    }
 
-    Calls get_chatgpt_response(base_url, model_name, user_message).
-    Returns JSON: { "response": "..." } or { "response": "Error..." }
+    Calls get_chatgpt_response() with the entire conversation from the front-end.
+    Returns JSON: { "response": "..." } on success or { "response": "Error..." } on error.
     """
     data = request.get_json()
 
-    # Extract message, model name, and optional base_url from the POST body
-    user_message = data.get('message', '')
+    # Extract the full conversation array from the request
+    conversation_history = data.get('messages', [])
     model_name = data.get('model', 'gpt-4')
-
-    # Default base_url to official OpenAI endpoint unless overridden
     base_url = data.get('base_url', 'https://api.openai.com/v1/chat/completions')
 
     # Call our function that handles the chat logic
-    result = get_chatgpt_response(base_url, model_name, user_message)
+    result = get_chatgpt_response(base_url, model_name, conversation_history)
     if "error" in result:
         return jsonify({"response": f"Error from OpenAI API: {result['error']}"}), 500
 
+    # Return the assistant's latest message
     return jsonify(result)

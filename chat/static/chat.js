@@ -1,54 +1,83 @@
 // chat.js
 // --------------------------------------------------
-// This file contains the main chat functionality:
-// - Capturing user input
-// - Sending messages to the server
-// - Appending chat responses
-// - Handling "Enter" key to send
+// This file controls the client-side chat functionality:
+//   1) Maintains an in-memory conversationHistory array.
+//   2) Sends the entire conversation to the server each time.
+//   3) Displays user and assistant messages in the UI.
 // --------------------------------------------------
 
 // --------------------------------------------------
-// Grab references to DOM elements we need
+// Select DOM elements
 // --------------------------------------------------
 const chatOutput = document.getElementById('chatOutput');
 const userInputField = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const modelSelect = document.getElementById('model');
 
+// The conversation array, stored client-side
+// Each entry: { role: "user"|"assistant"|"system", content: "..." }
+let conversationHistory = [];
+
+// Optional: If you want a default system prompt, you can push it here
+// Or you can rely on the server to insert a system prompt if missing.
+// conversationHistory.push({
+//   role: "system",
+//   content: "You are a large language model with ability to render Mermaid."
+// });
+
 // --------------------------------------------------
-// Send message to the server and handle response
+// Send message logic
 // --------------------------------------------------
 async function sendMessage() {
     const message = userInputField.value.trim();
-    if (!message) return; // Ignore empty input
+    if (!message) return; // don't send empty lines
 
-    // Reset the Web Speech API transcript (if the function is available)
-    if (typeof resetTranscript === 'function') {
-        resetTranscript();
-    }
+    // Add the user's new message to local conversation
+    conversationHistory.push({
+        role: 'user',
+        content: message
+    });
 
-    // Append your own (user) message to the chat
+    // Append user message to the UI
     appendMessage('user', message);
 
-    // Clear the user input
+    // Clear the input field
     userInputField.value = '';
 
     try {
-        // Send to the Flask endpoint
+        // POST to /api/chat with the entire conversation
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, model: modelSelect.value })
+            body: JSON.stringify({
+                messages: conversationHistory,
+                model: modelSelect.value
+            })
         });
 
         if (!response.ok) {
             throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
 
-        // Get JSON data
+        // JSON structure: { "response": "...assistant text...", "error": "...?" }
         const data = await response.json();
-        // Append the assistant's reply
-        appendMessage('assistant', data.response);
+
+        // If there's an error, handle it
+        if (data.response && data.response.startsWith("Error")) {
+            throw new Error(data.response);
+        }
+
+        // The assistant's latest reply
+        const assistantReply = data.response || "(No response)";
+
+        // Add assistant reply to local conversation
+        conversationHistory.push({
+            role: 'assistant',
+            content: assistantReply
+        });
+
+        // Display in the UI
+        appendMessage('assistant', assistantReply);
 
     } catch (error) {
         console.error('Error sending message:', error);
@@ -57,14 +86,14 @@ async function sendMessage() {
 }
 
 // --------------------------------------------------
-// Event listener for the "Send" button click
+// Send button click event
 // --------------------------------------------------
 sendBtn.addEventListener('click', () => {
     sendMessage();
 });
 
 // --------------------------------------------------
-// Event listener for "Enter" key in user input
+// "Enter" key event in user input
 // --------------------------------------------------
 userInputField.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -74,38 +103,34 @@ userInputField.addEventListener('keydown', (e) => {
 });
 
 // --------------------------------------------------
-// Append a message to the chatOutput
+// Function to append a message to chatOutput
 // --------------------------------------------------
 function appendMessage(role, text) {
     const messageEl = document.createElement('div');
-    // Use 'relative' to position copy button absolutely if needed
     messageEl.classList.add('mb-2', 'p-2', 'rounded', 'relative');
 
-    // Add background color and additional classes based on role
     if (role === 'user') {
         messageEl.classList.add('bg-blue-50');
     } else {
-        // For the assistant
+        // For assistant
         messageEl.classList.add('bg-green-50', 'assistant-message');
     }
 
-    // Build a small "label" for the speaker
+    // Label: user or ChatGPT
     const senderLabel = `<span class="font-bold">${role === 'user' ? 'You' : 'ChatGPT'}:</span> `;
-
-    // Insert the label, then convert the text from Markdown -> HTML
     messageEl.innerHTML = senderLabel;
 
-    // Create a container to hold the rendered markdown
+    // Add a container for the content
     const contentContainer = document.createElement('div');
     messageEl.appendChild(contentContainer);
 
-    // Render the markdown (and mermaid) in contentContainer
+    // Convert from Markdown to HTML, plus handle Mermaid
     renderMermaidMarkdown(text, contentContainer);
 
-    // Only add a copy button for messages from the assistant
+    // Optionally add a copy button for assistant messages
     if (role === 'assistant') {
         const copyBtn = document.createElement('button');
-        copyBtn.textContent = '📋 Copy'; // Clipboard emoji + "Copy"
+        copyBtn.textContent = '📋 Copy';
         copyBtn.classList.add(
             'copy-button',
             'absolute',
@@ -119,9 +144,8 @@ function appendMessage(role, text) {
             'cursor-pointer'
         );
 
-        // Copy raw text to clipboard on click
         copyBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent parent click events
+            e.stopPropagation();
             navigator.clipboard.writeText(text)
                 .then(() => {
                     console.log('Text copied to clipboard:', text);
@@ -134,9 +158,7 @@ function appendMessage(role, text) {
         messageEl.appendChild(copyBtn);
     }
 
-    // Add the entire message element to the chat output
     chatOutput.appendChild(messageEl);
-
-    // Keep chat scrolled to the bottom
+    // scroll to bottom
     chatOutput.scrollTop = chatOutput.scrollHeight;
 }
