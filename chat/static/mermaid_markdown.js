@@ -14,9 +14,26 @@ function convertMarkdownToHtml(text) {
 
 // Initialize/Render Mermaid diagrams inside the given container
 function renderMermaidDiagrams(container) {
-    // Make sure Mermaid is loaded (via the CDN in chat.html)
-    // Then initialize any Mermaid code blocks found inside `container`.
-    mermaid.init(undefined, container.querySelectorAll('.language-mermaid'));
+    const mermaidBlocks = container.querySelectorAll('.language-mermaid');
+    mermaidBlocks.forEach((block) => {
+        try {
+            // Try to parse the diagram first to catch syntax errors
+            const diagram = block.textContent;
+            mermaid.parse(diagram);
+            mermaid.init(undefined, block);
+        } catch (error) {
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-2 mb-2';
+            errorDiv.innerHTML = `
+                <p class="font-bold">Mermaid Syntax Error</p>
+                <p class="text-sm">${error.message}</p>
+                <pre class="text-xs mt-2 overflow-x-auto">${error.str || diagram}</pre>
+            `;
+            // Insert error message after the mermaid block
+            block.parentNode.insertBefore(errorDiv, block.nextSibling);
+        }
+    });
 }
 
 // A convenience function that returns HTML for markdown
