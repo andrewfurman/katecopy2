@@ -73,20 +73,11 @@
     id="inputContainer"
     class="fixed bottom-0 left-5 right-5 bg-gray-200 p-2 flex items-center"
   >
-    <!-- Microphone button for voice input -->
-    <button
-      id="micBtn"
-      class="bg-gray-500 text-white px-3 py-2 rounded-l"
-      title="Click to start voice input"
-    >
-      🎤
-    </button>
-
     <!-- User text input -->
     <input 
       type="text"
       id="userInput"
-      class="border px-2 py-2 w-full"
+      class="border px-2 py-2 w-full rounded-l"
       placeholder="Type your message..."
     />
 
@@ -98,9 +89,6 @@
       <span id="sendBtnText">&rarr;</span>
     </button>
   </div>
-
-  <!-- Load the Web Speech API logic -->
-  <script src="{{ url_for('chat_bp.static', filename='web_speech_api.js') }}"></script>
 
   <!-- Load the Mermaid + Markdown helpers -->
   <script src="{{ url_for('chat_bp.static', filename='mermaid_markdown.js') }}"></script>
