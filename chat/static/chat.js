@@ -81,7 +81,23 @@ async function sendMessage() {
 
     } catch (error) {
         console.error('Error sending message:', error);
-        appendMessage('assistant', 'Error communicating with the server.');
+        let errorMessage = 'An error occurred while communicating with ChatGPT. ';
+        
+        // Add specific error details
+        if (error.message) {
+            errorMessage += `\n\nError details: ${error.message}`;
+        }
+        
+        // Add common troubleshooting tips
+        errorMessage += `\n\nPossible causes:
+• The API key may be invalid or expired
+• The server may be experiencing high load
+• The connection may have timed out
+• The model may be temporarily unavailable
+
+Try sending your message again in a few moments.`;
+        
+        appendMessage('assistant', errorMessage);
     }
 }
 
@@ -108,6 +124,11 @@ userInputField.addEventListener('keydown', (e) => {
 function appendMessage(role, text) {
     const messageEl = document.createElement('div');
     messageEl.classList.add('mb-2', 'p-2', 'rounded', 'relative');
+    
+    // Add error styling if the message contains error information
+    if (text.includes('Error details:')) {
+        messageEl.classList.add('error-message');
+    }
 
     if (role === 'user') {
         messageEl.classList.add('bg-blue-50');
