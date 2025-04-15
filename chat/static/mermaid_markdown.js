@@ -19,19 +19,39 @@ function renderMermaidDiagrams(container) {
         try {
             // Try to parse the diagram first to catch syntax errors
             const diagram = block.textContent;
-            mermaid.parse(diagram);
+            const result = mermaid.parse(diagram);
             mermaid.init(undefined, block);
         } catch (error) {
+            // Get detailed parse error info if available
+            const parseError = mermaid.parseError;
+            const errorDetails = parseError ? {
+                message: parseError.message,
+                hash: parseError.hash,
+                line: parseError.hash?.line,
+                expected: parseError.hash?.expected?.join(', '),
+                token: parseError.hash?.token
+            } : null;
+
             // Create error message element with detailed error info
             const errorDiv = document.createElement('div');
             errorDiv.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-2 mb-2';
+            
+            // Split diagram into lines to highlight the error
+            const lines = diagram.split('\n');
+            const errorLine = errorDetails?.line || 0;
+            
             errorDiv.innerHTML = `
                 <p class="font-bold">Mermaid Syntax Error</p>
                 <p class="text-sm">Error details: ${error.message}</p>
-                <p class="text-sm">Error name: ${error.name}</p>
-                <p class="text-sm">Error location: ${error.loc || 'Unknown'}</p>
-                <p class="text-sm font-bold">Diagram code:</p>
-                <pre class="text-xs mt-2 overflow-x-auto bg-gray-100 p-2">${diagram}</pre>
+                ${errorDetails ? `
+                    <p class="text-sm">Line number: ${errorDetails.line}</p>
+                    ${errorDetails.expected ? `<p class="text-sm">Expected: ${errorDetails.expected}</p>` : ''}
+                    ${errorDetails.token ? `<p class="text-sm">Found: ${errorDetails.token}</p>` : ''}
+                ` : ''}
+                <p class="text-sm font-bold mt-2">Diagram code:</p>
+                <pre class="text-xs mt-2 overflow-x-auto bg-gray-100 p-2">${lines.map((line, i) => 
+                    `<div class="${i + 1 === errorLine ? 'bg-red-200' : ''}">${i + 1}: ${line}</div>`
+                ).join('\n')}</pre>
             `;
             // Insert error message after the mermaid block
             block.parentNode.insertBefore(errorDiv, block.nextSibling);
