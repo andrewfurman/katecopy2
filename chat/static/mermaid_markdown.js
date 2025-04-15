@@ -22,13 +22,16 @@ function renderMermaidDiagrams(container) {
             mermaid.parse(diagram);
             mermaid.init(undefined, block);
         } catch (error) {
-            // Create error message element
+            // Create error message element with detailed error info
             const errorDiv = document.createElement('div');
             errorDiv.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-2 mb-2';
             errorDiv.innerHTML = `
                 <p class="font-bold">Mermaid Syntax Error</p>
-                <p class="text-sm">${error.message}</p>
-                <pre class="text-xs mt-2 overflow-x-auto">${error.str || diagram}</pre>
+                <p class="text-sm">Error details: ${error.message}</p>
+                <p class="text-sm">Error name: ${error.name}</p>
+                <p class="text-sm">Error location: ${error.loc || 'Unknown'}</p>
+                <p class="text-sm font-bold">Diagram code:</p>
+                <pre class="text-xs mt-2 overflow-x-auto bg-gray-100 p-2">${diagram}</pre>
             `;
             // Insert error message after the mermaid block
             block.parentNode.insertBefore(errorDiv, block.nextSibling);
