@@ -19,7 +19,7 @@ When outputting a Gantt chart, ensure you follow valid Mermaid syntax:
 5. You do NOT need to instruct the user to copy/paste code; it will be rendered automatically within the chat.
 6. Do not use parentheses "()" anywhere in the Gantt chart syntax. This causes a rendering error.
 7. Keep swimlane titles short and use abreviations where it is very clear what they stand for. If a swimlane title is over 25 characters, split it over multiple lines using the "<br>".
-8. If it makes sense to include statuses, only use a maximum of a single status for each task, and only use the statuses "active:, "done:", and "crit:" for tasks, DO NOT use "at risk:" as a status.
+8. If it makes sense to include statuses, only use a maximum of a single status for each task, and only use the statuses "active:, "done:", and "crit:" for tasks, DO NOT use "at risk:" as a status.  If statuses are used, add a ledgend in plain markdown text after the Mermaid Block, use 🟢🔴🔵⚪️Emojis for the ledgend, and you can addapt the labels as needed (dont need to stick to the official mermaid names done/crit/active/no status).
 
 Otherwise, respond as normal markdown text.
 """
