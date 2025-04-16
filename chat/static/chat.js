@@ -44,6 +44,9 @@ async function sendMessage() {
     // Clear the input field
     userInputField.value = '';
 
+    // Show loading animation
+    showLoadingMessage();
+
     try {
         // POST to /api/chat with the entire conversation
         const response = await fetch('/api/chat', {
@@ -76,7 +79,8 @@ async function sendMessage() {
             content: assistantReply
         });
 
-        // Display in the UI
+        // Remove loading animation and display the response
+        removeLoadingMessage();
         appendMessage('assistant', assistantReply);
 
     } catch (error) {
@@ -97,6 +101,7 @@ async function sendMessage() {
 
 Try sending your message again in a few moments.`;
         
+        removeLoadingMessage();
         appendMessage('assistant', errorMessage);
     }
 }
