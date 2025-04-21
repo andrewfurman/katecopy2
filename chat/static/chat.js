@@ -139,7 +139,7 @@ function appendMessage(role, text) {
         messageEl.classList.add('bg-blue-50');
     } else {
         // For assistant
-        messageEl.classList.add('bg-green-50', 'assistant-message');
+        messageEl.classList.add('bg-white', 'assistant-message');
     }
 
     // Label: user or ChatGPT
