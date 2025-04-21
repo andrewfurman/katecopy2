@@ -49,8 +49,8 @@ Absolutely! Here are the **updated instructions** for writing error-free Mermaid
 
 5. **Status keywords** (optional; for task colors)
    - Place after task ID (no quotes or special formatting):  
-     - `done` (🟢)  
-     - `active` (🔵)  
+     - `done` (🔵)  
+     - `active` (🟢)  
      - `crit` (🔴)  
      - `atrisk` (🟡)
 
